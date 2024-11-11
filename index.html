@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
 </head>
 <body>
     <div id="login-section">
@@ -33,40 +32,24 @@
     <div id="app" style="display: none;">
         <section id="home-section">
             <h2>Gestor de Tareas</h2>
-            <button onclick="showRegister()">Registrar Tarea</button>
-            <button onclick="showTrack()">Seguimiento de Tareas</button>
             <button onclick="logout()">Cerrar Sesión</button>
         </section>
     </div>
 
     <script>
+        // Configuración de Firebase
         const firebaseConfig = {
-  apiKey: "AIzaSyCcPtdXm2hDb1G9V8-ncWu-kRNOcsu1p3Y",
-  authDomain: "gestor-de-tareas-ede19.firebaseapp.com",
-  projectId: "gestor-de-tareas-ede19",
-  storageBucket: "gestor-de-tareas-ede19.firebasestorage.app",
-  messagingSenderId: "862068440363",
-  appId: "1:862068440363:web:3bbdadf1347fd25963996e",
-
-};
+          apiKey: "AIzaSyCcPtdXm2hDb1G9V8-ncWu-kRNOcsu1p3Y",
+          authDomain: "gestor-de-tareas-ede19.firebaseapp.com",
+          projectId: "gestor-de-tareas-ede19",
+          storageBucket: "gestor-de-tareas-ede19.firebasestorage.app",
+          messagingSenderId: "862068440363",
+          appId: "1:862068440363:web:3bbdadf1347fd25963996e",
+        };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // Función de inicio de sesión
-        document.getElementById("login-form").addEventListener("submit", (e) => {
-            e.preventDefault();
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            auth.signInWithEmailAndPassword(email, password)
-                .then(userCredential => {
-                    document.getElementById("login-section").style.display = "none";
-                    document.getElementById("app").style.display = "block";
-                    loadUserTasks();
-                })
-                .catch(error => alert("Error de inicio de sesión: " + error.message));
-        });
-
-        // Función de registro de nuevo usuario
+        // Mostrar formulario de registro
         function showRegister() {
             document.getElementById("login-section").style.display = "none";
             document.getElementById("register-section").style.display = "block";
@@ -77,59 +60,55 @@
             e.preventDefault();
             const email = document.getElementById("register-email").value;
             const password = document.getElementById("register-password").value;
+            console.log("Intentando registrar usuario..."); // Depuración
+
             auth.createUserWithEmailAndPassword(email, password)
-                .then(userCredential => {
+                .then((userCredential) => {
+                    console.log("Usuario registrado con éxito:", userCredential.user);
                     alert("Usuario registrado con éxito");
                     document.getElementById("register-section").style.display = "none";
                     document.getElementById("login-section").style.display = "block";
                 })
-                .catch(error => alert("Error en el registro: " + error.message));
+                .catch((error) => {
+                    console.error("Error en el registro:", error.message);
+                    alert("Error en el registro: " + error.message);
+                });
+        });
+
+        // Función de inicio de sesión
+        document.getElementById("login-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            console.log("Intentando iniciar sesión..."); // Depuración
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    console.log("Inicio de sesión exitoso:", userCredential.user);
+                    document.getElementById("login-section").style.display = "none";
+                    document.getElementById("app").style.display = "block";
+                })
+                .catch((error) => {
+                    console.error("Error de inicio de sesión:", error.message);
+                    alert("Error de inicio de sesión: " + error.message);
+                });
         });
 
         // Función de cerrar sesión
         function logout() {
             auth.signOut().then(() => {
+                console.log("Sesión cerrada"); // Depuración
                 document.getElementById("login-section").style.display = "block";
                 document.getElementById("app").style.display = "none";
             });
         }
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyD7XaZw_dU_x5a93Egy77SRve3z9SNX0KRXKuuAzQtBdWmodlA4fWvqr_K09Du8Hbr/exec";
-        // Cargar tareas personalizadas del usuario
-        function loadUserTasks() {
-            const userId = firebase.auth().currentUser.uid;
-            fetch(WEB_APP_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "getTasks", userId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === "success") {
-                    tasks = data.tasks;
-                    updateTaskList();
-                } else {
-                    alert("Error al cargar las tareas");
-                }
-            });
-        }
 
-        // Función para actualizar la lista de tareas (esta función puede incluir cómo mostrar las tareas)
-        function updateTaskList() {
-            const taskList = document.getElementById('task-list');
-            taskList.innerHTML = '';
-            tasks.forEach(task => {
-                const li = document.createElement('li');
-                li.textContent = `${task.description} - Due: ${task.dueDate}`;
-                taskList.appendChild(li);
-            });
-        }
-
-        // Verificar estado de autenticación
-        auth.onAuthStateChanged(user => {
+        // Escuchar el estado de autenticación
+        auth.onAuthStateChanged((user) => {
             if (user) {
+                console.log("Usuario autenticado:", user); // Depuración
                 document.getElementById("login-section").style.display = "none";
                 document.getElementById("app").style.display = "block";
-                loadUserTasks();
             } else {
                 document.getElementById("login-section").style.display = "block";
                 document.getElementById("app").style.display = "none";
