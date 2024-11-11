@@ -17,7 +17,17 @@
             <input type="password" id="password" placeholder="Contraseña" required>
             <button type="submit">Iniciar Sesión</button>
         </form>
-        <p>¿No tienes cuenta? <button onclick="register()">Regístrate</button></p>
+        <p>¿No tienes cuenta? <button onclick="showRegisterForm()">Regístrate</button></p>
+    </div>
+
+    <div id="register-section" style="display: none;">
+        <h2>Registro de Usuario</h2>
+        <form id="register-form">
+            <input type="email" id="register-email" placeholder="Correo" required>
+            <input type="password" id="register-password" placeholder="Contraseña" required>
+            <button type="submit">Registrar</button>
+        </form>
+        <button onclick="showLoginForm()">Volver a Iniciar Sesión</button>
     </div>
 
     <div id="app" style="display: none;">
@@ -27,11 +37,15 @@
             <form id="task-form">
                 <input type="text" id="description" placeholder="Descripción de la tarea" required>
                 <input type="date" id="due-date" required>
-                <button type="submit">Registrar Trea</button>
+                <button type="submit">Registrar Tarea</button>
             </form>
             <div id="task-list"></div>
         </section>
     </div>
+
+    <footer>
+        Creado por Rafael Martinez
+    </footer>
 
     <script>
         // Configuración de Firebase
@@ -44,8 +58,22 @@
   appId: "1:862068440363:web:3bbdadf1347fd25963996e",
   measurementId: "G-8KS81Y3NWT"
 };
-        firebase.initializeApp(firebaseConfig);
+
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+
+        // Mostrar formulario de registro
+        function showRegisterForm() {
+            document.getElementById("login-section").style.display = "none";
+            document.getElementById("register-section").style.display = "block";
+        }
+
+        // Mostrar formulario de inicio de sesión
+        function showLoginForm() {
+            document.getElementById("register-section").style.display = "none";
+            document.getElementById("login-section").style.display = "block";
+        }
 
         // Función de inicio de sesión
         document.getElementById("login-form").addEventListener("submit", (e) => {
@@ -61,14 +89,18 @@
                 .catch(error => alert("Error de inicio de sesión: " + error.message));
         });
 
-        // Registro de nuevo usuario
-        function register() {
-            const email = prompt("Introduce tu correo:");
-            const password = prompt("Introduce una contraseña:");
+        // Función de registro de nuevo usuario
+        document.getElementById("register-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("register-email").value;
+            const password = document.getElementById("register-password").value;
             auth.createUserWithEmailAndPassword(email, password)
-                .then(userCredential => alert("Usuario registrado con éxito"))
+                .then(userCredential => {
+                    alert("Usuario registrado con éxito");
+                    showLoginForm();
+                })
                 .catch(error => alert("Error en el registro: " + error.message));
-        }
+        });
 
         // Función de cerrar sesión
         function logout() {
@@ -151,8 +183,18 @@
             document.getElementById("task-form").reset();
         });
     </script>
-        <footer>
-        Creado por Rafael Martinez
-    </footer>
+
+    <style>
+        /* Estilo para el footer al final de la página */
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+        }
+    </style>
 </body>
 </html>
