@@ -7,10 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     
-    <!-- Cargar Firebase App -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <!-- Cargar Firebase Auth -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <!-- Firebase CDN para Navegador (Versiones que no usan módulos) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 </head>
 <body>
     <div id="login-section">
@@ -58,7 +57,6 @@
                     alert("Inicio de sesión exitoso");
                     document.getElementById("login-section").style.display = "none";
                     document.getElementById("app").style.display = "block";
-                    // Llamar a función de carga de tareas personalizadas del usuario
                     loadUserTasks();
                 })
                 .catch(error => alert("Error de inicio de sesión: " + error.message));
@@ -73,7 +71,7 @@
                     alert("Usuario registrado con éxito");
                     document.getElementById("login-section").style.display = "none";
                     document.getElementById("app").style.display = "block";
-                    loadUserTasks(); // Llamar a función para cargar tareas
+                    loadUserTasks();
                 })
                 .catch(error => alert("Error en el registro: " + error.message));
         }
@@ -104,4 +102,3 @@
     </script>
 </body>
 </html>
-
