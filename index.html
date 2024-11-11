@@ -7,6 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
+    <script>
+        const password = prompt("Introduce la contraseña:");
+        if (password !== "Yoskibiri123") {
+            document.body.innerHTML = "<h2>Acceso denegado</h2>";
+            throw new Error("Acceso denegado");
+        }
+    </script>
 </head>
 <body>
     <div id="app">
@@ -41,13 +48,6 @@
     </div>
     
     <script src="app.js"></script>
-    <script>
-    const password = prompt("Introduce la contraseña:");
-    if (password !== "Yoskibiri1") {
-        document.write("Acceso denegado.");
-        throw new Error("Acceso denegado");
-    }
-</script>
-
 </body>
 </html>
+
