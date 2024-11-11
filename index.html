@@ -94,6 +94,57 @@
                 document.getElementById("app").style.display = "none";
             }
         });
+
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyD7XaZw_dU_x5a93Egy77SRve3z9SNX0KRXKuuAzQtBdWmodlA4fWvqr_K09Du8Hbr/exec";
+
+// Guardar tarea en Google Sheets
+function saveTaskToSheet(description, dueDate) {
+    const userId = firebase.auth().currentUser.uid;
+    fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "saveTask", userId, description, dueDate })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("Tarea guardada con éxito");
+            loadUserTasks();
+        } else {
+            alert("Error al guardar la tarea");
+        }
+    });
+}
+
+// Obtener tareas del usuario desde Google Sheets
+function loadUserTasks() {
+    const userId = firebase.auth().currentUser.uid;
+    fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "getTasks", userId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            tasks = data.tasks;
+            updateTaskList();
+        } else {
+            alert("Error al cargar las tareas");
+        }
+    });
+}
+
+// Modificar la función de envío en el formulario de registro para usar Google Sheets
+taskForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+    const description = document.getElementById('description').value;
+    const dueDate = document.getElementById('due-date').value;
+    saveTaskToSheet(description, dueDate);
+    taskForm.reset();
+    showTrack();
+});
+
     </script>
 </body>
 </html>
