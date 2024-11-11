@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,32 +18,37 @@
             <input type="password" id="password" placeholder="Contraseña" required>
             <button type="submit">Iniciar Sesión</button>
         </form>
-        <p>¿No tienes cuenta? <button onclick="register()">Regístrate</button></p>
+        <p>¿No tienes cuenta? <button onclick="showRegister()">Regístrate</button></p>
+    </div>
+
+    <div id="register-section" style="display: none;">
+        <h2>Registrar Usuario</h2>
+        <form id="register-form">
+            <input type="email" id="register-email" placeholder="Correo" required>
+            <input type="password" id="register-password" placeholder="Contraseña" required>
+            <button type="submit">Registrar</button>
+        </form>
     </div>
 
     <div id="app" style="display: none;">
-        <!-- Contenido de la aplicación -->
         <section id="home-section">
             <h2>Gestor de Tareas</h2>
             <button onclick="showRegister()">Registrar Tarea</button>
             <button onclick="showTrack()">Seguimiento de Tareas</button>
             <button onclick="logout()">Cerrar Sesión</button>
         </section>
-        <!-- Registro y Seguimiento de Tareas -->
-        <!-- ... mismo contenido de tu código anterior ... -->
     </div>
 
     <script>
-        // Configuración de Firebase
         const firebaseConfig = {
-          apiKey: "AIzaSyCcPtdXm2hDb1G9V8-ncWu-kRNOcsu1p3Y",
-          authDomain: "gestor-de-tareas-ede19.firebaseapp.com",
-          projectId: "gestor-de-tareas-ede19",
-          storageBucket: "gestor-de-tareas-ede19.firebasestorage.app",
-          messagingSenderId: "862068440363",
-          appId: "1:862068440363:web:3bbdadf1347fd25963996e",
-          measurementId: "G-8KS81Y3NWT"
-        };
+  apiKey: "AIzaSyCcPtdXm2hDb1G9V8-ncWu-kRNOcsu1p3Y",
+  authDomain: "gestor-de-tareas-ede19.firebaseapp.com",
+  projectId: "gestor-de-tareas-ede19",
+  storageBucket: "gestor-de-tareas-ede19.firebasestorage.app",
+  messagingSenderId: "862068440363",
+  appId: "1:862068440363:web:3bbdadf1347fd25963996e",
+  measurementId: "G-8KS81Y3NWT"
+};
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
@@ -56,20 +61,30 @@
                 .then(userCredential => {
                     document.getElementById("login-section").style.display = "none";
                     document.getElementById("app").style.display = "block";
-                    // Cargar tareas del usuario
                     loadUserTasks();
                 })
                 .catch(error => alert("Error de inicio de sesión: " + error.message));
         });
 
-        // Registro de nuevo usuario
-        function register() {
-            const email = prompt("Introduce tu correo:");
-            const password = prompt("Introduce una contraseña:");
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(userCredential => alert("Usuario registrado con éxito"))
-                .catch(error => alert("Error en el registro: " + error.message));
+        // Función de registro de nuevo usuario
+        function showRegister() {
+            document.getElementById("login-section").style.display = "none";
+            document.getElementById("register-section").style.display = "block";
         }
+
+        // Registro de nuevo usuario
+        document.getElementById("register-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("register-email").value;
+            const password = document.getElementById("register-password").value;
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    alert("Usuario registrado con éxito");
+                    document.getElementById("register-section").style.display = "none";
+                    document.getElementById("login-section").style.display = "block";
+                })
+                .catch(error => alert("Error en el registro: " + error.message));
+        });
 
         // Función de cerrar sesión
         function logout() {
@@ -78,74 +93,50 @@
                 document.getElementById("app").style.display = "none";
             });
         }
-
-        // Función para cargar tareas personalizadas del usuario (próximamente con Google Sheets)
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyD7XaZw_dU_x5a93Egy77SRve3z9SNX0KRXKuuAzQtBdWmodlA4fWvqr_K09Du8Hbr/exec";
+        // Cargar tareas personalizadas del usuario
         function loadUserTasks() {
-            // Aquí implementaremos la carga de tareas desde Google Sheets
+            const userId = firebase.auth().currentUser.uid;
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "getTasks", userId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    tasks = data.tasks;
+                    updateTaskList();
+                } else {
+                    alert("Error al cargar las tareas");
+                }
+            });
         }
 
-        // Escuchar el estado de autenticación
+        // Función para actualizar la lista de tareas (esta función puede incluir cómo mostrar las tareas)
+        function updateTaskList() {
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = '';
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.textContent = `${task.description} - Due: ${task.dueDate}`;
+                taskList.appendChild(li);
+            });
+        }
+
+        // Verificar estado de autenticación
         auth.onAuthStateChanged(user => {
             if (user) {
                 document.getElementById("login-section").style.display = "none";
                 document.getElementById("app").style.display = "block";
+                loadUserTasks();
             } else {
                 document.getElementById("login-section").style.display = "block";
                 document.getElementById("app").style.display = "none";
             }
         });
-
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyD7XaZw_dU_x5a93Egy77SRve3z9SNX0KRXKuuAzQtBdWmodlA4fWvqr_K09Du8Hbr/exec";
-
-// Guardar tarea en Google Sheets
-function saveTaskToSheet(description, dueDate) {
-    const userId = firebase.auth().currentUser.uid;
-    fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "saveTask", userId, description, dueDate })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === "success") {
-            alert("Tarea guardada con éxito");
-            loadUserTasks();
-        } else {
-            alert("Error al guardar la tarea");
-        }
-    });
-}
-
-// Obtener tareas del usuario desde Google Sheets
-function loadUserTasks() {
-    const userId = firebase.auth().currentUser.uid;
-    fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "getTasks", userId })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === "success") {
-            tasks = data.tasks;
-            updateTaskList();
-        } else {
-            alert("Error al cargar las tareas");
-        }
-    });
-}
-
-// Modificar la función de envío en el formulario de registro para usar Google Sheets
-taskForm.addEventListener('submit', function(event) {
-    event.preventDefault();
-    const description = document.getElementById('description').value;
-    const dueDate = document.getElementById('due-date').value;
-    saveTaskToSheet(description, dueDate);
-    taskForm.reset();
-    showTrack();
-});
-
     </script>
 </body>
 </html>
+
 
