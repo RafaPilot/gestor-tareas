@@ -6,204 +6,94 @@
     <title>Gestor de Tareas</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <link rel="manifest" href="manifest.json">
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
 </head>
 <body>
+    <div id="login-section">
+        <h2>Iniciar Sesión</h2>
+        <form id="login-form">
+            <input type="email" id="email" placeholder="Correo" required>
+            <input type="password" id="password" placeholder="Contraseña" required>
+            <button type="submit">Iniciar Sesión</button>
+        </form>
+        <p>¿No tienes cuenta? <button onclick="register()">Regístrate</button></p>
+    </div>
+
     <div id="app" style="display: none;">
-        <!-- Pantalla de Inicio -->
+        <!-- Contenido de la aplicación -->
         <section id="home-section">
             <h2>Gestor de Tareas</h2>
             <button onclick="showRegister()">Registrar Tarea</button>
             <button onclick="showTrack()">Seguimiento de Tareas</button>
+            <button onclick="logout()">Cerrar Sesión</button>
         </section>
-
-        <!-- Registro de Tareas -->
-        <section id="register-section" style="display: none;">
-            <h2>Registrar Tarea</h2>
-            <form id="task-form">
-                <label for="description">Descripción:</label>
-                <input type="text" id="description" required>
-
-                <label for="due-date">Fecha de Vencimiento:</label>
-                <input type="date" id="due-date" required>
-
-                <button type="submit">Registrar</button>
-            </form>
-            <button onclick="showHome()">Regresar</button>
-        </section>
-
-        <!-- Seguimiento de Tareas -->
-        <section id="track-section" style="display: none;">
-            <h2>Seguimiento de Tareas</h2>
-            <ul id="task-list"></ul>
-            <button onclick="showHome()">Regresar</button>
-        </section>
+        <!-- Registro y Seguimiento de Tareas -->
+        <!-- ... mismo contenido de tu código anterior ... -->
     </div>
-
-    <!-- Pantalla de Inicio de Sesión -->
-    <section id="login-section" style="display: block;">
-        <h2>Iniciar sesión</h2>
-        <form id="login-form">
-            <label for="login-email">Correo electrónico:</label>
-            <input type="email" id="login-email" required>
-            <label for="login-password">Contraseña:</label>
-            <input type="password" id="login-password" required>
-            <button type="submit">Iniciar sesión</button>
-        </form>
-    </section>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
 
     <script>
         // Configuración de Firebase
         const firebaseConfig = {
-            apiKey: "AIzaSyCcPtdXm2hDb1G9V8-ncWu-kRNOcsu1p3Y",
-            authDomain: "gestor-de-tareas-ede19.firebaseapp.com",
-            projectId: "gestor-de-tareas-ede19",
-            storageBucket: "gestor-de-tareas-ede19.firebasestorage.app",
-            messagingSenderId: "862068440363",
-            appId: "1:862068440363:web:3bbdadf1347fd25963996e"
-            measurementId: "G-8KS81Y3NWT"
+          apiKey: "AIzaSyCcPtdXm2hDb1G9V8-ncWu-kRNOcsu1p3Y",
+          authDomain: "gestor-de-tareas-ede19.firebaseapp.com",
+          projectId: "gestor-de-tareas-ede19",
+          storageBucket: "gestor-de-tareas-ede19.firebasestorage.app",
+          messagingSenderId: "862068440363",
+          appId: "1:862068440363:web:3bbdadf1347fd25963996e",
+          measurementId: "G-8KS81Y3NWT"
         };
-
-        // Inicializar Firebase
-        const app = firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // Estado de la autenticación
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                loadUserTasks();
-                showTrack();
-            } else {
-                showLogin();
-            }
-        });
-
-        // Función para mostrar la pantalla de login
-        function showLogin() {
-            document.getElementById('login-section').style.display = 'block';
-            document.getElementById('app').style.display = 'none';
-        }
-
-        // Función para iniciar sesión
-        function signIn(email, password) {
+        // Función de inicio de sesión
+        document.getElementById("login-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
             auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    console.log("Usuario autenticado:", user);
+                .then(userCredential => {
+                    document.getElementById("login-section").style.display = "none";
+                    document.getElementById("app").style.display = "block";
+                    // Cargar tareas del usuario
                     loadUserTasks();
-                    showTrack();
                 })
-                .catch((error) => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                    console.log("Error de inicio de sesión:", errorCode, errorMessage);
-                    alert("Error al iniciar sesión: " + errorMessage);
-                });
-        }
-
-        // Manejo del formulario de inicio de sesión
-        const loginForm = document.getElementById('login-form');
-        loginForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            signIn(email, password);
+                .catch(error => alert("Error de inicio de sesión: " + error.message));
         });
 
-        // Manejo de tareas con LocalStorage
-        const taskForm = document.getElementById('task-form');
-        const taskList = document.getElementById('task-list');
-        let tasks = [];
-
-        // Función para guardar tareas en LocalStorage
-        function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
+        // Registro de nuevo usuario
+        function register() {
+            const email = prompt("Introduce tu correo:");
+            const password = prompt("Introduce una contraseña:");
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(userCredential => alert("Usuario registrado con éxito"))
+                .catch(error => alert("Error en el registro: " + error.message));
         }
 
-        // Función para actualizar la lista de tareas
-        function updateTaskList() {
-            taskList.innerHTML = '';
-            tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-            tasks.forEach((task, index) => {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `
-                    ${task.description} - ${task.dueDate}
-                    <button onclick="editTask(${index})">Editar</button>
-                    <button onclick="deleteTask(${index})">Eliminar</button>
-                `;
-                
-                const daysRemaining = (new Date(task.dueDate) - new Date()) / (1000 * 60 * 60 * 24);
-                listItem.style.color = daysRemaining <= 30 ? 'red' : daysRemaining <= 60 ? 'orange' : 'green';
-                taskList.appendChild(listItem);
+        // Función de cerrar sesión
+        function logout() {
+            auth.signOut().then(() => {
+                document.getElementById("login-section").style.display = "block";
+                document.getElementById("app").style.display = "none";
             });
         }
 
-        // Registrar nueva tarea
-        taskForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const description = document.getElementById('description').value;
-            const dueDate = document.getElementById('due-date').value;
-            tasks.push({ description, dueDate });
-            saveTasks();
-            taskForm.reset();
-            showTrack();
-            updateTaskList();
-        });
-
-        // Editar tarea
-        function editTask(index) {
-            const newDescription = prompt("Edita la descripción:", tasks[index].description);
-            const newDueDate = prompt("Edita la fecha de vencimiento:", tasks[index].dueDate);
-            if (newDescription && newDueDate) {
-                tasks[index].description = newDescription;
-                tasks[index].dueDate = newDueDate;
-                saveTasks();
-                updateTaskList();
-            }
-        }
-
-        // Eliminar tarea
-        function deleteTask(index) {
-            if (confirm("¿Estás seguro de eliminar esta tarea?")) {
-                tasks.splice(index, 1);
-                saveTasks();
-                updateTaskList();
-            }
-        }
-
-        // Funciones para mostrar y ocultar secciones
-        function showHome() {
-            document.getElementById('home-section').style.display = 'block';
-            document.getElementById('register-section').style.display = 'none';
-            document.getElementById('track-section').style.display = 'none';
-        }
-
-        function showRegister() {
-            document.getElementById('home-section').style.display = 'none';
-            document.getElementById('register-section').style.display = 'block';
-            document.getElementById('track-section').style.display = 'none';
-        }
-
-        function showTrack() {
-            document.getElementById('home-section').style.display = 'none';
-            document.getElementById('register-section').style.display = 'none';
-            document.getElementById('track-section').style.display = 'block';
-            updateTaskList();
-        }
-
-        // Función para cargar las tareas del usuario desde Google Sheets (puedes modificar este código para conectarlo con Sheets)
+        // Función para cargar tareas personalizadas del usuario (próximamente con Google Sheets)
         function loadUserTasks() {
-            const userId = firebase.auth().currentUser.uid;
-            // Aquí iría el código para cargar las tareas desde Google Sheets usando el ID de usuario
-            // Por ejemplo, usando una API o fetch a un servidor que maneje Google Sheets
-            tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            updateTaskList();
+            // Aquí implementaremos la carga de tareas desde Google Sheets
         }
+
+        // Escuchar el estado de autenticación
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById("login-section").style.display = "none";
+                document.getElementById("app").style.display = "block";
+            } else {
+                document.getElementById("login-section").style.display = "block";
+                document.getElementById("app").style.display = "none";
+            }
+        });
     </script>
 </body>
 </html>
