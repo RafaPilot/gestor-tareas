@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     
-    <!-- Firebase CDN para Navegador (Versiones que no usan módulos) -->
+    <!-- Firebase CDN para Navegador (Compatibles sin módulo) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 </head>
@@ -32,7 +32,6 @@
         <!-- Aquí irían los elementos adicionales como la lista de tareas y formularios -->
     </div>
 
-    <!-- Configuración de Firebase y lógica de autenticación -->
     <script>
         // Configuración de Firebase
         const firebaseConfig = {
@@ -44,7 +43,10 @@
   appId: "1:862068440363:web:3bbdadf1347fd25963996e",
   measurementId: "G-8KS81Y3NWT"
 };
+        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
+
+        // Inicializar Firebase Auth después de firebase.initializeApp
         const auth = firebase.auth();
 
         // Función de inicio de sesión
