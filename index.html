@@ -5,196 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de Tareas</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
-    <div id="auth-section">
-        <h2>Iniciar Sesión</h2>
-        <form id="login-form">
-            <label for="username">Usuario:</label>
-            <input type="text" id="username" required>
-            
-            <label for="password">Contraseña:</label>
-            <input type="password" id="password" required>
-            
-            <button type="submit">Ingresar</button>
-        </form>
-        <button onclick="showRegisterForm()">Registrar</button>
-    </div>
-
-    <div id="register-section" style="display: none;">
-        <h2>Registro de Usuario</h2>
-        <form id="register-form">
-            <label for="new-username">Usuario:</label>
-            <input type="text" id="new-username" required>
-            
-            <label for="new-password">Contraseña:</label>
-            <input type="password" id="new-password" required>
-            
-            <button type="submit">Registrar Usuario</button>
-        </form>
-        <button onclick="showLoginForm()">Regresar a Iniciar Sesión</button>
-    </div>
-
-    <div id="app" style="display: none;">
-        <!-- Pantalla de Inicio -->
-        <section id="home-section">
-            <h2>Gestor de Tareas</h2>
-            <button onclick="showRegister()">Registrar Tarea</button>
-            <button onclick="showTrack()">Seguimiento de Tareas</button>
-        </section>
+    <div id="app">
+        <h2>Bienvenido</h2>
+        <button onclick="showRegister()">Registrar Tarea</button>
+        <button onclick="showTrack()">Seguimiento de Tareas</button>
         
-        <!-- Registro de Tareas -->
-        <section id="register-section-app" style="display: none;">
-            <h2>Registrar Tarea</h2>
+        <!-- Formulario de Registro -->
+        <div id="register-section" class="hidden">
+            <h3>Registrar Tarea</h3>
             <form id="task-form">
                 <label for="description">Descripción:</label>
                 <input type="text" id="description" required>
-                
                 <label for="due-date">Fecha de Vencimiento:</label>
                 <input type="date" id="due-date" required>
-                
                 <button type="submit">Registrar</button>
             </form>
             <button onclick="showHome()">Regresar</button>
-        </section>
+        </div>
 
         <!-- Seguimiento de Tareas -->
-        <section id="track-section" style="display: none;">
-            <h2>Seguimiento de Tareas</h2>
+        <div id="track-section" class="hidden">
+            <h3>Seguimiento de Tareas</h3>
             <ul id="task-list"></ul>
             <button onclick="showHome()">Regresar</button>
-        </section>
+        </div>
     </div>
-    
+
     <script>
-        let currentUser = null;
+        const scriptURL = "https://script.google.com/macros/s/AKfycbxQ2XCEAEJpjqC_cOps9l2fALXAj5ODRmM5r8nqrRgApGLZd8uxV5S8Ddwb-JICwWIt/exec"; // Pega la URL de tu Apps Script
+        const apiToken = "Yoskibiri123"; // Usa el mismo token de seguridad
 
-        // Funciones de autenticación
-        function showLoginForm() {
-            document.getElementById('auth-section').style.display = 'block';
-            document.getElementById('register-section').style.display = 'none';
-            document.getElementById('app').style.display = 'none';
-        }
-
-        function showRegisterForm() {
-            document.getElementById('auth-section').style.display = 'none';
-            document.getElementById('register-section').style.display = 'block';
-            document.getElementById('app').style.display = 'none';
-        }
-
-        document.getElementById('register-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const username = document.getElementById('new-username').value;
-            const password = document.getElementById('new-password').value;
-            
-            if (!localStorage.getItem(username)) {
-                localStorage.setItem(username, JSON.stringify({ password, tasks: [] }));
-                alert("Usuario registrado exitosamente");
-                showLoginForm();
-            } else {
-                alert("Este usuario ya existe");
-            }
-        });
-
-        document.getElementById('login-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            const userData = JSON.parse(localStorage.getItem(username));
-            if (userData && userData.password === password) {
-                currentUser = username;
-                document.getElementById('auth-section').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-                updateTaskList();
-            } else {
-                alert("Usuario o contraseña incorrectos");
-            }
-        });
-
-        // Manejo de tareas por usuario
-        const taskForm = document.getElementById('task-form');
-        const taskList = document.getElementById('task-list');
-
-        function saveTasks() {
-            const userData = JSON.parse(localStorage.getItem(currentUser));
-            userData.tasks = tasks;
-            localStorage.setItem(currentUser, JSON.stringify(userData));
-        }
-
-        let tasks = [];
-
-        function updateTaskList() {
-            const userData = JSON.parse(localStorage.getItem(currentUser));
-            tasks = userData.tasks || [];
-            taskList.innerHTML = '';
-            tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-            tasks.forEach((task, index) => {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `
-                    ${task.description} - ${task.dueDate}
-                    <button onclick="editTask(${index})">Editar</button>
-                    <button onclick="deleteTask(${index})">Eliminar</button>
-                `;
-                
-                const daysRemaining = (new Date(task.dueDate) - new Date()) / (1000 * 60 * 60 * 24);
-                listItem.style.color = daysRemaining <= 30 ? 'red' : daysRemaining <= 60 ? 'orange' : 'green';
-                taskList.appendChild(listItem);
-            });
-        }
-
-        taskForm.addEventListener('submit', function(event) {
+        document.getElementById('task-form').addEventListener('submit', function(event) {
             event.preventDefault();
             const description = document.getElementById('description').value;
             const dueDate = document.getElementById('due-date').value;
-            tasks.push({ description, dueDate });
-            saveTasks();
-            taskForm.reset();
-            showTrack();
-            updateTaskList();
+
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "addTask", description, dueDate, token: apiToken })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || "Error al registrar tarea");
+                showTrack();
+                updateTaskList();
+            });
         });
 
-        function editTask(index) {
-            const newDescription = prompt("Edita la descripción:", tasks[index].description);
-            const newDueDate = prompt("Edita la fecha de vencimiento:", tasks[index].dueDate);
-            if (newDescription && newDueDate) {
-                tasks[index].description = newDescription;
-                tasks[index].dueDate = newDueDate;
-                saveTasks();
-                updateTaskList();
-            }
+        function updateTaskList() {
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "getTasks", token: apiToken })
+            })
+            .then(response => response.json())
+            .then(tasks => {
+                const taskList = document.getElementById('task-list');
+                taskList.innerHTML = '';
+                tasks.forEach((task, index) => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${task[0]} - ${task[1]}`;
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = "Eliminar";
+                    deleteButton.onclick = () => deleteTask(index);
+                    listItem.appendChild(deleteButton);
+                    taskList.appendChild(listItem);
+                });
+            });
         }
 
         function deleteTask(index) {
-            if (confirm("¿Estás seguro de eliminar esta tarea?")) {
-                tasks.splice(index, 1);
-                saveTasks();
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "deleteTask", rowIndex: index, token: apiToken })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || "Error al eliminar tarea");
                 updateTaskList();
-            }
+            });
         }
 
         function showHome() {
-            document.getElementById('home-section').style.display = 'block';
-            document.getElementById('register-section-app').style.display = 'none';
-            document.getElementById('track-section').style.display = 'none';
+            document.getElementById('register-section').classList.add('hidden');
+            document.getElementById('track-section').classList.add('hidden');
         }
 
         function showRegister() {
-            document.getElementById('home-section').style.display = 'none';
-            document.getElementById('register-section-app').style.display = 'block';
-            document.getElementById('track-section').style.display = 'none';
+            document.getElementById('register-section').classList.remove('hidden');
+            document.getElementById('track-section').classList.add('hidden');
         }
 
         function showTrack() {
-            document.getElementById('home-section').style.display = 'none';
-            document.getElementById('register-section-app').style.display = 'none';
-            document.getElementById('track-section').style.display = 'block';
             updateTaskList();
+            document.getElementById('register-section').classList.add('hidden');
+            document.getElementById('track-section').classList.remove('hidden');
         }
-        
-        // Inicializar en la pantalla de inicio de sesión
-        showLoginForm();
     </script>
 </body>
 </html>
