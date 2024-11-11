@@ -70,15 +70,17 @@
     }
 
     document.getElementById("login-form").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.signInWithEmail = "none";
-          document.getElementById("app").style.display = "block";
-          loadUserTasks();
-        })
-        .catch(error => alert("Error de inicio de sesión: " + error.message));
-); // <- Aquí termina correctamente el bloque del addEventListener
+  e.preventDefault();
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("app").style.display = "block";
+      loadUserTasks();
+    })
+    .catch(error => alert("Error de inicio de sesión: " + error.message));
+}); // <- Aquí termina correctamente el bloque del addEventListener
 
     document.getElementById("register-form").addEventListener("submit", (e) => {
       e.preventDefault();
