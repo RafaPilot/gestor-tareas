@@ -1,4 +1,4 @@
-/* Aplicar fuente Poppins */
+/* Fuente y estilo base */
 body {
     font-family: 'Poppins', sans-serif;
     display: flex;
@@ -10,28 +10,32 @@ body {
 }
 
 #app {
-    width: 90%;
+    width: 95%;
     max-width: 400px;
     padding: 20px;
     background-color: #fff;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    border-radius: 8px;
+    border-radius: 12px;
+    transition: all 0.3s ease-in-out;
 }
 
+/* Encabezados y botones */
 h2 {
     text-align: center;
+    font-weight: 600;
 }
 
 button {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     background-color: #007BFF;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top: 12px;
     font-weight: 600;
+    transition: background-color 0.3s;
 }
 
 button:hover {
@@ -40,15 +44,51 @@ button:hover {
 
 input {
     width: 100%;
-    padding: 8px;
-    margin: 10px 0;
+    padding: 10px;
+    margin: 12px 0;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 6px;
+    font-size: 1rem;
 }
 
+/* Lista de tareas */
 ul {
     list-style-type: none;
     padding: 0;
+    margin-top: 16px;
+}
+
+li {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+li:hover {
+    background-color: #f7f7f7;
+}
+
+/* Responsividad */
+@media (max-width: 600px) {
+    #app {
+        width: 100%;
+        border-radius: 0;
+    }
+
+    button {
+        font-size: 1rem;
+        padding: 10px;
+    }
+
+    input {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
 }
 
 li {
