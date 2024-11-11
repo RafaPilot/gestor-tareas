@@ -1,103 +1,138 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de Tareas</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-        }
-        h2, h3 {
-            text-align: center;
-        }
-        .hidden {
-            display: none;
-        }
-        button {
-            margin-top: 10px;
-            padding: 8px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .section {
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
-    <div id="app">
-        <h2>Gestor de Tareas</h2>
-        <!-- Opciones de navegación inicial -->
-        <div id="home-section" class="section">
+    <div id="app" style="display: none;">
+        <!-- Pantalla de Inicio -->
+        <section id="home-section">
+            <h2>Gestor de Tareas</h2>
             <button onclick="showRegister()">Registrar Tarea</button>
             <button onclick="showTrack()">Seguimiento de Tareas</button>
-        </div>
+        </section>
         
-        <!-- Formulario de Registro -->
-        <div id="register-section" class="section hidden">
-            <h3>Registrar Tarea</h3>
+        <!-- Registro de Tareas -->
+        <section id="register-section" style="display: none;">
+            <h2>Registrar Tarea</h2>
             <form id="task-form">
                 <label for="description">Descripción:</label>
-                <input type="text" id="description" required><br><br>
+                <input type="text" id="description" required>
+                
                 <label for="due-date">Fecha de Vencimiento:</label>
-                <input type="date" id="due-date" required><br><br>
+                <input type="date" id="due-date" required>
+                
                 <button type="submit">Registrar</button>
             </form>
             <button onclick="showHome()">Regresar</button>
-        </div>
+        </section>
 
         <!-- Seguimiento de Tareas -->
-        <div id="track-section" class="section hidden">
-            <h3>Seguimiento de Tareas</h3>
+        <section id="track-section" style="display: none;">
+            <h2>Seguimiento de Tareas</h2>
             <ul id="task-list"></ul>
             <button onclick="showHome()">Regresar</button>
-        </div>
+        </section>
     </div>
-
+    
     <script>
-        // Funciones para mostrar y ocultar las secciones
-        function showHome() {
-            document.getElementById('home-section').classList.remove('hidden');
-            document.getElementById('register-section').classList.add('hidden');
-            document.getElementById('track-section').classList.add('hidden');
+        // Protección de contraseña
+        const password = prompt("Introduce la contraseña:");
+        if (password === "TuContraseñaSegura") {
+            document.getElementById('app').style.display = 'block';
+        } else {
+            document.body.innerHTML = "<h2>Acceso denegado</h2>";
+            throw new Error("Acceso denegado");
         }
 
-        function showRegister() {
-            document.getElementById('home-section').classList.add('hidden');
-            document.getElementById('register-section').classList.remove('hidden');
-            document.getElementById('track-section').classList.add('hidden');
+        // Manejo de tareas con LocalStorage
+        const taskForm = document.getElementById('task-form');
+        const taskList = document.getElementById('task-list');
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        // Función para guardar tareas en LocalStorage
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
         }
 
-        function showTrack() {
-            document.getElementById('home-section').classList.add('hidden');
-            document.getElementById('register-section').classList.add('hidden');
-            document.getElementById('track-section').classList.remove('hidden');
-            // Aquí cargaremos la lista de tareas en el futuro
+        // Función para actualizar la lista de tareas
+        function updateTaskList() {
+            taskList.innerHTML = '';
+            tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+            tasks.forEach((task, index) => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    ${task.description} - ${task.dueDate}
+                    <button onclick="editTask(${index})">Editar</button>
+                    <button onclick="deleteTask(${index})">Eliminar</button>
+                `;
+                
+                const daysRemaining = (new Date(task.dueDate) - new Date()) / (1000 * 60 * 60 * 24);
+                listItem.style.color = daysRemaining <= 30 ? 'red' : daysRemaining <= 60 ? 'orange' : 'green';
+                taskList.appendChild(listItem);
+            });
         }
 
-        // Manejo del formulario de registro (en esta versión solo muestra la tarea en la consola)
-        document.getElementById('task-form').addEventListener('submit', function(event) {
+        // Registrar nueva tarea
+        taskForm.addEventListener('submit', function(event) {
             event.preventDefault();
             const description = document.getElementById('description').value;
             const dueDate = document.getElementById('due-date').value;
-            console.log("Descripción:", description);
-            console.log("Fecha de Vencimiento:", dueDate);
-            alert("Tarea registrada: " + description + " con vencimiento " + dueDate);
+            tasks.push({ description, dueDate });
+            saveTasks();
+            taskForm.reset();
             showTrack();
+            updateTaskList();
         });
+
+        // Editar tarea
+        function editTask(index) {
+            const newDescription = prompt("Edita la descripción:", tasks[index].description);
+            const newDueDate = prompt("Edita la fecha de vencimiento:", tasks[index].dueDate);
+            if (newDescription && newDueDate) {
+                tasks[index].description = newDescription;
+                tasks[index].dueDate = newDueDate;
+                saveTasks();
+                updateTaskList();
+            }
+        }
+
+        // Eliminar tarea
+        function deleteTask(index) {
+            if (confirm("¿Estás seguro de eliminar esta tarea?")) {
+                tasks.splice(index, 1);
+                saveTasks();
+                updateTaskList();
+            }
+        }
+
+        // Funciones para mostrar y ocultar secciones
+        function showHome() {
+            document.getElementById('home-section').style.display = 'block';
+            document.getElementById('register-section').style.display = 'none';
+            document.getElementById('track-section').style.display = 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('home-section').style.display = 'none';
+            document.getElementById('register-section').style.display = 'block';
+            document.getElementById('track-section').style.display = 'none';
+        }
+
+        function showTrack() {
+            document.getElementById('home-section').style.display = 'none';
+            document.getElementById('register-section').style.display = 'none';
+            document.getElementById('track-section').style.display = 'block';
+            updateTaskList();
+        }
+
+        // Cargar lista de tareas al iniciar
+        updateTaskList();
     </script>
 </body>
 </html>
-
-
