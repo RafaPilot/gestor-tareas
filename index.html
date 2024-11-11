@@ -47,14 +47,14 @@
 
   <script>
     const firebaseConfig = {
-  apiKey: "AIzaSyCcPtdXm2hDb1G9V8-ncWu-kRNOcsu1p3Y",
-  authDomain: "gestor-de-tareas-ede19.firebaseapp.com",
-  projectId: "gestor-de-tareas-ede19",
-  storageBucket: "gestor-de-tareas-ede19.firebasestorage.app",
-  messagingSenderId: "862068440363",
-  appId: "1:862068440363:web:3bbdadf1347fd25963996e",
-  measurementId: "G-8KS81Y3NWT"
-};
+      apiKey: "AIzaSyCcPtdXm2hDb1G9V8-ncWu-kRNOcsu1p3Y",
+      authDomain: "gestor-de-tareas-ede19.firebaseapp.com",
+      projectId: "gestor-de-tareas-ede19",
+      storageBucket: "gestor-de-tareas-ede19.firebasestorage.app",
+      messagingSenderId: "862068440363",
+      appId: "1:862068440363:web:3bbdadf1347fd25963996e",
+      measurementId: "G-8KS81Y3NWT"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -112,50 +112,78 @@
       }
     });
 
-    const WEB_APP_URL = "URL_DE_TU_APP_SCRIPT";
+    const API_KEY = 'patKdRGdBpkVOvg7T.c69fe9f193416fa0b1705b8c1a1cc9b23af4aa3c61d4dbd79066dc6e8f91194e
+'; // Reemplaza con tu token de acceso personal
+    const BASE_ID = 'appnERds2vBGovYJP'; // Reemplaza con tu Base ID
+    const TABLE_NAME = 'Tareas';
 
-    function saveTaskToSheet(description, dueDate) {
+    async function saveTaskToAirtable(description, dueDate) {
       const userId = auth.currentUser.uid;
-      fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        mode: "no-cors",
-        body: JSON.stringify({ action: "saveTask", userId, description, dueDate })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === "success") {
+      try {
+        const response = await fetch(`https://api.airtable.com/v0/<span class="math-inline">\{BASE\_ID\}/</span>{TABLE_NAME}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            records: [
+              {
+                fields: {
+                  'Descripción': description,
+                  'Fecha de vencimiento': dueDate,
+                  'Fecha de creación': new Date().toISOString(),
+                  'ID de usuario': userId,
+                }
+              }
+            ]
+          })
+        });
+
+        if (response.ok) {
           alert("Tarea guardada con éxito");
           loadUserTasks();
+        } else {
+          const errorData = await response.json();
+          console.error("Error al guardar la tarea:", errorData);
+          alert("Error al guardar la tarea. Por favor, inténtalo de nuevo.");
         }
-      })
-      .catch(error => console.error("Error:", error));
+      } catch (error) {
+        console.error("Error al guardar la tarea:", error);
+        alert("Error al guardar la tarea. Por favor, inténtalo de nuevo.");
+      }
     }
 
-    function loadUserTasks() {
+    async function loadUserTasks() {
       const userId = auth.currentUser.uid;
-      fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        mode: "no-cors",
-        body: JSON.stringify({ action: "getTasks", userId })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === "success") {
-          updateTaskList(data.tasks);
+      try {
+        const response = await fetch(`https://api.airtable.com/v0/<span class="math-inline">\{BASE\_ID\}/</span>{TABLE_NAME}?filterByFormula=({ID de usuario} = '${userId}')`, {
+          headers: {
+            'Authorization': `Bearer ${API_KEY}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          updateTaskList(data.records);
+        } else {
+          const errorData = await response.json();
+          console.error("Error al obtener las tareas:", errorData);
+          alert("Error al obtener las tareas. Por favor, inténtalo de nuevo.");
         }
-      })
-      .catch(error => console.error("Error:", error));
+      } catch (error) {
+        console.error("Error al obtener las tareas:", error);
+        alert("Error al obtener las tareas. Por favor, inténtalo de nuevo.");
+      }
     }
 
     function updateTaskList(tasks) {
       const taskList = document.getElementById("task-list");
       taskList.innerHTML = tasks.map(task => `
         <div>
-          <p><strong>${task.description}</strong></p>
-          <p>Fecha de vencimiento: ${task.dueDate}</p>
-          <p>Fecha de creación: ${task.createdAt}</p>
+          <p><strong>${task.fields['Descripción']}</strong></p>
+          <p>Fecha de vencimiento: ${task.fields['Fecha de vencimiento']}</p>
+          <p>Fecha de creación: ${task.fields['Fecha de creación']}</p>
         </div>
       `).join('');
     }
@@ -164,12 +192,11 @@
       e.preventDefault();
       const description = document.getElementById("description").value;
       const dueDate = document.getElementById("due-date").value;
-      saveTaskToSheet(description, dueDate);
+      saveTaskToAirtable(description, dueDate);
     });
   </script>
-</body>
-</html>
-
+  <style>
+    /* Estilo para el footer al final de la página
       <style>
         /* Estilo para el footer al final de la página */
         footer {
