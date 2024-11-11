@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Tareas (Prueba)</title>
+    <title>Gestor de Tareas</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Cargar Firebase App -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <!-- Cargar Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
 </head>
 <body>
     <div id="login-section">
@@ -14,39 +20,20 @@
             <input type="password" id="password" placeholder="Contraseña" required>
             <button type="submit">Iniciar Sesión</button>
         </form>
-        <p>¿No tienes cuenta? <button onclick="showRegister()">Regístrate</button></p>
-    </div>
-
-    <div id="register-section" style="display: none;">
-        <h2>Registrar Usuario</h2>
-        <form id="register-form">
-            <input type="email" id="register-email" placeholder="Correo" required>
-            <input type="password" id="register-password" placeholder="Contraseña" required>
-            <button type="submit">Registrar</button>
-        </form>
+        <p>¿No tienes cuenta? <button onclick="register()">Regístrate</button></p>
     </div>
 
     <div id="app" style="display: none;">
-        <h2>Gestor de Tareas</h2>
-        <button onclick="showTaskForm()">Registrar Tarea</button>
-        <button onclick="loadUserTasks()">Ver Tareas Guardadas</button>
-        <button onclick="logout()">Cerrar Sesión</button>
-        
-        <section id="task-section" style="display: none;">
-            <h3>Nueva Tarea</h3>
-            <form id="task-form">
-                <input type="text" id="description" placeholder="Descripción" required>
-                <input type="date" id="due-date" required>
-                <button type="submit">Guardar Tarea</button>
-            </form>
+        <section id="home-section">
+            <h2>Gestor de Tareas</h2>
+            <button onclick="showRegister()">Registrar Tarea</button>
+            <button onclick="showTrack()">Seguimiento de Tareas</button>
+            <button onclick="logout()">Cerrar Sesión</button>
         </section>
-
-        <section id="tasks-list" style="display: none;">
-            <h3>Lista de Tareas</h3>
-            <ul id="task-list"></ul>
-        </section>
+        <!-- Aquí irían los elementos adicionales como la lista de tareas y formularios -->
     </div>
 
+    <!-- Configuración de Firebase y lógica de autenticación -->
     <script>
         // Configuración de Firebase
         const firebaseConfig = {
@@ -57,56 +44,41 @@
   messagingSenderId: "862068440363",
   appId: "1:862068440363:web:3bbdadf1347fd25963996e",
   measurementId: "G-8KS81Y3NWT"
-        };
+};
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // Mostrar formulario de registro
-        function showRegister() {
-            document.getElementById("login-section").style.display = "none";
-            document.getElementById("register-section").style.display = "block";
-        }
-
-       // Registro de nuevo usuario
-document.getElementById("register-form").addEventListener("submit", (e) => {
-    e.preventDefault(); // Prevenir el envío del formulario
-
-    const email = document.getElementById("register-email").value;
-    const password = document.getElementById("register-password").value;
-
-    console.log("Intentando registrar usuario..."); // Mensaje para verificar que el evento se ejecuta
-
-    auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            console.log("Usuario registrado con éxito:", userCredential.user); // Verificar usuario
-            alert("Usuario registrado con éxito");
-
-            // Redirigir a la pantalla de inicio de sesión
-            document.getElementById("register-section").style.display = "none";
-            document.getElementById("login-section").style.display = "block";
-        })
-        .catch((error) => {
-            console.error("Error en el registro:", error); // Mostrar error en la consola
-            alert("Error en el registro: " + error.message); // Mostrar el mensaje de error al usuario
-        });
-});
-
-
-        // Inicio de sesión
+        // Función de inicio de sesión
         document.getElementById("login-form").addEventListener("submit", (e) => {
             e.preventDefault();
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
             auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    console.log("Inicio de sesión exitoso:", userCredential.user);
+                .then(userCredential => {
+                    alert("Inicio de sesión exitoso");
                     document.getElementById("login-section").style.display = "none";
                     document.getElementById("app").style.display = "block";
+                    // Llamar a función de carga de tareas personalizadas del usuario
+                    loadUserTasks();
                 })
-                .catch((error) => console.error("Error de inicio de sesión:", error));
+                .catch(error => alert("Error de inicio de sesión: " + error.message));
         });
 
-        // Cerrar sesión
+        // Registro de nuevo usuario
+        function register() {
+            const email = prompt("Introduce tu correo:");
+            const password = prompt("Introduce una contraseña:");
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    alert("Usuario registrado con éxito");
+                    document.getElementById("login-section").style.display = "none";
+                    document.getElementById("app").style.display = "block";
+                    loadUserTasks(); // Llamar a función para cargar tareas
+                })
+                .catch(error => alert("Error en el registro: " + error.message));
+        }
+
+        // Función de cerrar sesión
         function logout() {
             auth.signOut().then(() => {
                 document.getElementById("login-section").style.display = "block";
@@ -114,49 +86,22 @@ document.getElementById("register-form").addEventListener("submit", (e) => {
             });
         }
 
-        // Función para guardar tareas en LocalStorage (simulación)
-        function saveTaskLocally(description, dueDate) {
-            const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-            tasks.push({ description, dueDate });
-            localStorage.setItem("tasks", JSON.stringify(tasks));
-            console.log("Tarea guardada localmente:", { description, dueDate });
-        }
-
-        // Función para cargar tareas de LocalStorage (simulación)
-        function loadUserTasks() {
-            const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-            const taskList = document.getElementById("task-list");
-            taskList.innerHTML = "";
-            tasks.forEach((task, index) => {
-                const listItem = document.createElement("li");
-                listItem.textContent = `Descripción: ${task.description}, Fecha de Vencimiento: ${task.dueDate}`;
-                taskList.appendChild(listItem);
-            });
-            document.getElementById("task-section").style.display = "none";
-            document.getElementById("tasks-list").style.display = "block";
-        }
-
-        // Enviar tarea al LocalStorage en el formulario
-        document.getElementById("task-form").addEventListener("submit", (event) => {
-            event.preventDefault();
-            const description = document.getElementById("description").value;
-            const dueDate = document.getElementById("due-date").value;
-            saveTaskLocally(description, dueDate);
-            document.getElementById("task-form").reset();
-        });
-
         // Escuchar el estado de autenticación
-        auth.onAuthStateChanged((user) => {
+        auth.onAuthStateChanged(user => {
             if (user) {
-                console.log("Usuario autenticado:", user);
                 document.getElementById("login-section").style.display = "none";
                 document.getElementById("app").style.display = "block";
             } else {
-                console.log("No hay usuario autenticado");
                 document.getElementById("login-section").style.display = "block";
                 document.getElementById("app").style.display = "none";
             }
         });
+
+        // Placeholder para cargar tareas del usuario desde Google Sheets
+        function loadUserTasks() {
+            // Aquí se implementará la carga de tareas personalizada según el usuario
+        }
     </script>
 </body>
 </html>
+
