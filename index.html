@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Tareas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div id="app">
+        <!-- Pantalla de Inicio -->
+        <section id="home-section">
+            <h2>Gestor de Tareas</h2>
+            <button onclick="showRegister()">Registrar Tarea</button>
+            <button onclick="showTrack()">Seguimiento de Tareas</button>
+        </section>
+        
+        <!-- Registro de Tareas -->
+        <section id="register-section" style="display: none;">
+            <h2>Registrar Tarea</h2>
+            <form id="task-form">
+                <label for="description">Descripción:</label>
+                <input type="text" id="description" required>
+                
+                <label for="due-date">Fecha de Vencimiento:</label>
+                <input type="date" id="due-date" required>
+                
+                <button type="submit">Registrar</button>
+            </form>
+            <button onclick="showHome()">Regresar</button>
+        </section>
+
+        <!-- Seguimiento de Tareas -->
+        <section id="track-section" style="display: none;">
+            <h2>Seguimiento de Tareas</h2>
+            <ul id="task-list"></ul>
+            <button onclick="showHome()">Regresar</button>
+        </section>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
