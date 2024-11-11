@@ -32,7 +32,10 @@
         <!-- Registro y Seguimiento de Tareas -->
         <!-- ... mismo contenido de tu código anterior ... -->
     </div>
-
+<!-- Firebase Configuration -->
+<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
     <script>
         // Configuración de Firebase
         const firebaseConfig = {
@@ -42,10 +45,11 @@
             storageBucket: "gestor-de-tareas-ede19.firebasestorage.app",
             messagingSenderId: "862068440363",
             appId: "1:862068440363:web:3bbdadf1347fd25963996e"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
+         };
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+</script>
+ <script>
         // Función de inicio de sesión
         document.getElementById("login-form").addEventListener("submit", (e) => {
             e.preventDefault();
