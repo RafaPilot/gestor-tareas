@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestor de Tareas</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 </head>
@@ -46,13 +47,13 @@
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyCcPtdXm2hDb1G9V8-ncWu-kRNOcsu1p3Y",
-      authDomain: "gestor-de-tareas-ede19.firebaseapp.com",
-      projectId: "gestor-de-tareas-ede19",
-      storageBucket: "gestor-de-tareas-ede19.firebasestorage.app",
-      messagingSenderId: "862068440363",
-      appId: "1:862068440363:web:3bbdadf1347fd25963996e",
-      measurementId: "G-8KS81Y3NWT"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID",
+      measurementId: "YOUR_MEASUREMENT_ID"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -111,7 +112,7 @@
       }
     });
 
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyJhMjvF8yNrCWIfyZKXqsCc3MfO4hhBsjwdjoh8nnqWuTq2qskPZRrR788ET0m3_ON/exec";
+    const WEB_APP_URL = "URL_DE_TU_APP_SCRIPT";
 
     function saveTaskToSheet(description, dueDate) {
       const userId = auth.currentUser.uid;
@@ -150,13 +151,13 @@
 
     function updateTaskList(tasks) {
       const taskList = document.getElementById("task-list");
-      taskList.innerHTML = tasks.map(task => 
+      taskList.innerHTML = tasks.map(task => `
         <div>
           <p><strong>${task.description}</strong></p>
           <p>Fecha de vencimiento: ${task.dueDate}</p>
           <p>Fecha de creación: ${task.createdAt}</p>
         </div>
-      ).join('');
+      `).join('');
     }
 
     document.getElementById("task-form").addEventListener("submit", (e) => {
@@ -166,6 +167,9 @@
       saveTaskToSheet(description, dueDate);
     });
   </script>
+</body>
+</html>
+
       <style>
         /* Estilo para el footer al final de la página */
         footer {
