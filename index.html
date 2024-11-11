@@ -41,5 +41,13 @@
     </div>
     
     <script src="app.js"></script>
+    <script>
+    const password = prompt("Introduce la contraseña:");
+    if (password !== "TuContraseñaSegura") {
+        document.write("Acceso denegado.");
+        throw new Error("Acceso denegado");
+    }
+</script>
+
 </body>
 </html>
