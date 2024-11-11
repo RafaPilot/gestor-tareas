@@ -7,16 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
-    <script>
-        const password = prompt("Introduce la contraseña:");
-        if (password !== "Yoskibiri123") {
-            document.body.innerHTML = "<h2>Acceso denegado</h2>";
-            throw new Error("Acceso denegado");
-        }
-    </script>
 </head>
 <body>
-    <div id="app">
+    <div id="app" style="display: none;">
         <!-- Pantalla de Inicio -->
         <section id="home-section">
             <h2>Gestor de Tareas</h2>
@@ -47,7 +40,100 @@
         </section>
     </div>
     
-    <script src="app.js"></script>
+    <script>
+        // Protección de contraseña
+        const password = prompt("Introduce la contraseña:");
+        if (password === "Yoskibiri123") {
+            document.getElementById('app').style.display = 'block';
+        } else {
+            document.body.innerHTML = "<h2>Acceso denegado</h2>";
+            throw new Error("Acceso denegado");
+        }
+
+        // Manejo de tareas con LocalStorage
+        const taskForm = document.getElementById('task-form');
+        const taskList = document.getElementById('task-list');
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        // Función para guardar tareas en LocalStorage
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // Función para actualizar la lista de tareas
+        function updateTaskList() {
+            taskList.innerHTML = '';
+            tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+            tasks.forEach((task, index) => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    ${task.description} - ${task.dueDate}
+                    <button onclick="editTask(${index})">Editar</button>
+                    <button onclick="deleteTask(${index})">Eliminar</button>
+                `;
+                
+                const daysRemaining = (new Date(task.dueDate) - new Date()) / (1000 * 60 * 60 * 24);
+                listItem.style.color = daysRemaining <= 30 ? 'red' : daysRemaining <= 60 ? 'orange' : 'green';
+                taskList.appendChild(listItem);
+            });
+        }
+
+        // Registrar nueva tarea
+        taskForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const description = document.getElementById('description').value;
+            const dueDate = document.getElementById('due-date').value;
+            tasks.push({ description, dueDate });
+            saveTasks();
+            taskForm.reset();
+            showTrack();
+            updateTaskList();
+        });
+
+        // Editar tarea
+        function editTask(index) {
+            const newDescription = prompt("Edita la descripción:", tasks[index].description);
+            const newDueDate = prompt("Edita la fecha de vencimiento:", tasks[index].dueDate);
+            if (newDescription && newDueDate) {
+                tasks[index].description = newDescription;
+                tasks[index].dueDate = newDueDate;
+                saveTasks();
+                updateTaskList();
+            }
+        }
+
+        // Eliminar tarea
+        function deleteTask(index) {
+            if (confirm("¿Estás seguro de eliminar esta tarea?")) {
+                tasks.splice(index, 1);
+                saveTasks();
+                updateTaskList();
+            }
+        }
+
+        // Funciones para mostrar y ocultar secciones
+        function showHome() {
+            document.getElementById('home-section').style.display = 'block';
+            document.getElementById('register-section').style.display = 'none';
+            document.getElementById('track-section').style.display = 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('home-section').style.display = 'none';
+            document.getElementById('register-section').style.display = 'block';
+            document.getElementById('track-section').style.display = 'none';
+        }
+
+        function showTrack() {
+            document.getElementById('home-section').style.display = 'none';
+            document.getElementById('register-section').style.display = 'none';
+            document.getElementById('track-section').style.display = 'block';
+            updateTaskList();
+        }
+
+        // Cargar lista de tareas al iniciar
+        updateTaskList();
+    </script>
 </body>
 </html>
 
