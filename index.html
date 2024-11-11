@@ -67,20 +67,30 @@
             document.getElementById("register-section").style.display = "block";
         }
 
-        // Registro de nuevo usuario
-        document.getElementById("register-form").addEventListener("submit", (e) => {
-            e.preventDefault();
-            const email = document.getElementById("register-email").value;
-            const password = document.getElementById("register-password").value;
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    console.log("Usuario registrado con éxito:", userCredential.user);
-                    alert("Usuario registrado con éxito");
-                    document.getElementById("register-section").style.display = "none";
-                    document.getElementById("login-section").style.display = "block";
-                })
-                .catch((error) => console.error("Error en el registro:", error));
+       // Registro de nuevo usuario
+document.getElementById("register-form").addEventListener("submit", (e) => {
+    e.preventDefault(); // Prevenir el envío del formulario
+
+    const email = document.getElementById("register-email").value;
+    const password = document.getElementById("register-password").value;
+
+    console.log("Intentando registrar usuario..."); // Mensaje para verificar que el evento se ejecuta
+
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            console.log("Usuario registrado con éxito:", userCredential.user); // Verificar usuario
+            alert("Usuario registrado con éxito");
+
+            // Redirigir a la pantalla de inicio de sesión
+            document.getElementById("register-section").style.display = "none";
+            document.getElementById("login-section").style.display = "block";
+        })
+        .catch((error) => {
+            console.error("Error en el registro:", error); // Mostrar error en la consola
+            alert("Error en el registro: " + error.message); // Mostrar el mensaje de error al usuario
         });
+});
+
 
         // Inicio de sesión
         document.getElementById("login-form").addEventListener("submit", (e) => {
