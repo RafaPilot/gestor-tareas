@@ -6,93 +6,137 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background-color: #f0f0f0;
+    background-color: #f8f9fa;
 }
 
 #app {
-    width: 95%;
+    width: 100%;
     max-width: 400px;
     padding: 20px;
     background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 16px;
     transition: all 0.3s ease-in-out;
+    overflow: hidden;
 }
 
-/* Encabezados y botones */
 h2 {
     text-align: center;
+    font-size: 1.5rem;
     font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
 }
 
+/* Botones */
 button {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     background-color: #007BFF;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     margin-top: 12px;
+    font-size: 1rem;
     font-weight: 600;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s ease-in-out;
 }
 
 button:hover {
     background-color: #0056b3;
 }
 
+button:focus {
+    outline: none;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+}
+
+/* Inputs */
 input {
     width: 100%;
-    padding: 10px;
-    margin: 12px 0;
+    padding: 12px;
+    margin: 10px 0;
     border: 1px solid #ddd;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 1rem;
+    box-sizing: border-box;
 }
 
 /* Lista de tareas */
-ul {
-    list-style-type: none;
-    padding: 0;
-    margin-top: 16px;
+#task-list div {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    background-color: #f1f1f1;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: background-color 0.2s ease;
+    font-size: 1rem;
 }
 
-li {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
-    font-weight: 500;
-    transition: background-color 0.2s;
+#task-list div:hover {
+    background-color: #e7e7e7;
 }
 
-li:hover {
-    background-color: #f7f7f7;
+/* Colores de prioridad */
+#task-list div.red {
+    border-left: 6px solid #ff4d4d;
 }
 
-/* Responsividad */
+#task-list div.yellow {
+    border-left: 6px solid #ffcc00;
+}
+
+#task-list div.green {
+    border-left: 6px solid #4CAF50;
+}
+
+#task-list div strong {
+    color: #333;
+}
+
+/* Mejoras de accesibilidad para móviles */
 @media (max-width: 600px) {
+    body {
+        padding: 0;
+        align-items: flex-start;
+    }
+
     #app {
         width: 100%;
+        height: 100vh;
         border-radius: 0;
-    }
-
-    button {
-        font-size: 1rem;
-        padding: 10px;
-    }
-
-    input {
-        padding: 8px;
-        font-size: 0.9rem;
+        padding: 20px 15px;
+        box-shadow: none;
     }
 
     h2 {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
+        margin-bottom: 20px;
+    }
+
+    button {
+        font-size: 0.95rem;
+        padding: 12px;
+        margin-top: 10px;
+    }
+
+    input {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    #task-list div {
+        padding: 14px;
+        font-size: 0.95rem;
     }
 }
 
-li {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    font-weight: 600;
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: #888;
 }
