@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <title>Gestor de Tareas</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 </head>
-
 <body>
   <div id="login-section">
     <h2>Iniciar Sesión</h2>
@@ -51,6 +51,7 @@
 
     <section id="task-list-section" style="display: none;">
       <h2>Seguimiento de Tareas</h2>
+      <input type="text" id="task-search" placeholder="Buscar tareas..." oninput="filterTasks()" style="width: 100%; margin-bottom: 10px;">
       <div id="task-list"></div>
       <button onclick="showHome()">Volver a Inicio</button>
     </section>
@@ -126,6 +127,7 @@
 
     async function saveTaskToAirtable(description, dueDate) {
       const userId = auth.currentUser.uid;
+      const userEmail = auth.currentUser.email;  // Obtener el correo del usuario
       const response = await fetch(`https://api.airtable.com/v0/appnERds2vBGovYJP/Tareas`, {
         method: 'POST',
         headers: {
@@ -133,7 +135,15 @@
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          records: [{ fields: { 'Descripción': description, 'Fecha de vencimiento': dueDate, 'Fecha de creación': new Date().toISOString(), 'ID de usuario': userId } }]
+          records: [{ 
+            fields: { 
+              'Descripción': description, 
+              'Fecha de vencimiento': dueDate, 
+              'Fecha de creación': new Date().toISOString(), 
+              'ID de usuario': userId,
+              'Correo de usuario': userEmail // Agregar correo
+            } 
+          }]
         })
       });
       if (!response.ok) {
@@ -168,7 +178,8 @@
       await fetch(`https://api.airtable.com/v0/appnERds2vBGovYJP/Tareas/${taskId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer patKdRGdBpkVOvg7T.fd64109904b18f402d4456c6a7f40aba4ce4fffb4204fb07c88df5baeb75760c`
+          'Authorization': `Bearer patKdRGdBpkVOvg7T.fd64109904b18f402d4456c6a7f40aba4ce4fffb4204fb07c88df5baeb75760c`,
+          'Content-Type': 'application/json',
         }
       });
     }
@@ -177,26 +188,24 @@
       const taskListDiv = document.getElementById("task-list");
       taskListDiv.innerHTML = "";
       tasks.forEach(task => {
-        const taskDiv = document.createElement("div");
-        const dueDate = new Date(task.fields['Fecha de vencimiento']);
-        dueDate.setDate(dueDate.getDate() + 1);
-        const formattedDate = dueDate.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        taskDiv.textContent = `Descripción: ${task.fields['Descripción']} - Fecha de vencimiento: ${formattedDate}`;
-        
-        const daysToDueDate = (new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24);
-        taskDiv.style.backgroundColor = daysToDueDate <= 30 ? 'red' : daysToDueDate <= 60 ? 'yellow' : 'green';
-        
-        taskListDiv.appendChild(taskDiv);
+        const taskElement = document.createElement("div");
+        taskElement.classList.add("task");
+        taskElement.innerHTML = `
+          <p>${task.fields['Descripción']}</p>
+          <p>${new Date(task.fields['Fecha de vencimiento']).toLocaleDateString()}</p>
+        `;
+        taskListDiv.appendChild(taskElement);
       });
     }
 
-    document.getElementById("task-form").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const description = document.getElementById("description").value;
-      const dueDate = document.getElementById("due-date").value;
-      saveTaskToAirtable(description, dueDate);
-      document.getElementById("task-form").reset();
-    });
+    function filterTasks() {
+      const searchTerm = document.getElementById("task-search").value.toLowerCase();
+      const tasks = document.querySelectorAll(".task");
+      tasks.forEach(task => {
+        const taskDescription = task.querySelector("p").textContent.toLowerCase();
+        task.style.display = taskDescription.includes(searchTerm) ? "block" : "none";
+      });
+    }
 
     function logout() {
       auth.signOut().then(() => {
