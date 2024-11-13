@@ -128,10 +128,10 @@
 
     async function saveTaskToAirtable(description, dueDate) {
       const userId = auth.currentUser.uid;
-      const response = await fetch(https://api.airtable.com/v0/appnERds2vBGovYJP/Tareas, {
+      const response = await fetch(`https://api.airtable.com/v0/appnERds2vBGovYJP/Tareas`, {
         method: 'POST',
         headers: {
-          'Authorization': Bearer patKdRGdBpkVOvg7T.fd64109904b18f402d4456c6a7f40aba4ce4fffb4204fb07c88df5baeb75760c,
+          'Authorization': `Bearer patKdRGdBpkVOvg7T.fd64109904b18f402d4456c6a7f40aba4ce4fffb4204fb07c88df5baeb75760c`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -147,9 +147,9 @@
 
     async function loadUserTasks() {
       const userId = auth.currentUser.uid;
-      const response = await fetch(https://api.airtable.com/v0/appnERds2vBGovYJP/Tareas?filterByFormula=({ID de usuario} = '${userId}'), {
+      const response = await fetch(`https://api.airtable.com/v0/appnERds2vBGovYJP/Tareas?filterByFormula=({ID de usuario} = '${userId}')`, {
         headers: {
-          'Authorization': Bearer patKdRGdBpkVOvg7T.fd64109904b18f402d4456c6a7f40aba4ce4fffb4204fb07c88df5baeb75760c
+          'Authorization': `Bearer patKdRGdBpkVOvg7T.fd64109904b18f402d4456c6a7f40aba4ce4fffb4204fb07c88df5baeb75760c`
         }
       });
       const data = await response.json();
@@ -167,10 +167,10 @@
     }
 
     async function deleteTaskFromAirtable(taskId) {
-      await fetch(https://api.airtable.com/v0/appnERds2vBGovYJP/Tareas/${taskId}, {
+      await fetch(`https://api.airtable.com/v0/appnERds2vBGovYJP/Tareas/${taskId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': Bearer patKdRGdBpkVOvg7T.fd64109904b18f402d4456c6a7f40aba4ce4fffb4204fb07c88df5baeb75760c
+          'Authorization': `Bearer patKdRGdBpkVOvg7T.fd64109904b18f402d4456c6a7f40aba4ce4fffb4204fb07c88df5baeb75760c`
         }
       });
     }
@@ -185,7 +185,7 @@
         const diffMonths = (dueDate.getFullYear() - today.getFullYear()) * 12 + (dueDate.getMonth() - today.getMonth());
         const color = diffMonths <= 1 ? 'red' : diffMonths === 2 ? 'yellow' : 'green';
         
-        taskDiv.innerHTML = <strong>${task.fields['Descripción']}</strong><br>Fecha de vencimiento: <span style="color: ${color};">${dueDate.toLocaleDateString()}</span>;
+        taskDiv.innerHTML = `<strong>${task.fields['Descripción']}</strong><br>Fecha de vencimiento: <span style="color: ${color};">${dueDate.toLocaleDateString()}</span>`;
         taskListDiv.appendChild(taskDiv);
       });
     }
