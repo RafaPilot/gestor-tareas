@@ -140,3 +140,16 @@ footer {
     font-size: 0.8rem;
     color: #888;
 }
+ @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #121212;
+        color: #e0e0e0;
+      }
+      #login-section, #register-section, #app, footer {
+        background-color: #1e1e1e;
+      }
+      button {
+        background-color: #333;
+        color: #e0e0e0;
+      }
+    }
