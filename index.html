@@ -51,6 +51,8 @@
 
     <section id="task-list-section" style="display: none;">
       <h2>Seguimiento de Tareas</h2>
+      <!-- Buscador en la parte superior de Seguimiento -->
+      <input type="text" id="task-search" placeholder="Buscar tareas..." oninput="filterTasks()" style="width: 100%; margin-bottom: 10px;">
       <div id="task-list"></div>
       <button onclick="showHome()">Volver a Inicio</button>
     </section>
@@ -179,44 +181,49 @@
       tasks.forEach(task => {
         const taskDiv = document.createElement("div");
         const dueDate = new Date(task.fields['Fecha de vencimiento']);
-        dueDate.setDate(dueDate.getDate() + 1);
-        const formattedDate = dueDate.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        taskDiv.textContent = `Descripción: ${task.fields['Descripción']} - Fecha de vencimiento: ${formattedDate}`;
+        const today = new Date();
+        const diffMonths = (dueDate.getFullYear() - today.getFullYear()) * 12 + (dueDate.getMonth() - today.getMonth());
+        const color = diffMonths <= 1 ? 'red' : diffMonths === 2 ? 'yellow' : 'green';
         
-        const daysToDueDate = (new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24);
-        taskDiv.style.backgroundColor = daysToDueDate <= 30 ? 'red' : daysToDueDate <= 60 ? 'yellow' : 'green';
-        
+        taskDiv.innerHTML = `<strong>${task.fields['Descripción']}</strong><br>Fecha de vencimiento: <span style="color: ${color};">${dueDate.toLocaleDateString()}</span>`;
         taskListDiv.appendChild(taskDiv);
       });
     }
 
-    document.getElementById("task-form").addEventListener("submit", (e) => {
+    function filterTasks() {
+      const searchQuery = document.getElementById("task-search").value.toLowerCase();
+      const taskDivs = document.getElementById("task-list").children;
+
+      for (const taskDiv of taskDivs) {
+        const taskText = taskDiv.innerText.toLowerCase();
+        taskDiv.style.display = taskText.includes(searchQuery) ? "block" : "none";
+      }
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("app").style.display = "block";
+        showHome();
+      } else {
+        document.getElementById("app").style.display = "none";
+        showLoginForm();
+      }
+    });
+
+    document.getElementById("task-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const description = document.getElementById("description").value;
       const dueDate = document.getElementById("due-date").value;
-      saveTaskToAirtable(description, dueDate);
+      await saveTaskToAirtable(description, dueDate);
       document.getElementById("task-form").reset();
+      alert("Tarea registrada con éxito");
+      showTaskList();
     });
 
     function logout() {
-      auth.signOut().then(() => {
-        document.getElementById("app").style.display = "none";
-        document.getElementById("login-section").style.display = "block";
-      });
+      auth.signOut();
     }
   </script>
-<style>
-    footer {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      text-align: center;
-      padding: 30px;
-      background-color: #333;
-      color: white;
-      font-size: 1rem;
-      font-weight: 300;
-    }
-  </style>
 </body>
 </html>
