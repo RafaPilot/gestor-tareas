@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <title>Gestor de Tareas</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 </head>
+
 <body>
   <div id="login-section">
     <h2>Iniciar Sesión</h2>
@@ -51,8 +51,6 @@
 
     <section id="task-list-section" style="display: none;">
       <h2>Seguimiento de Tareas</h2>
-      <!-- Buscador en la parte superior de Seguimiento -->
-      <input type="text" id="task-search" placeholder="Buscar tareas..." oninput="filterTasks()" style="width: 100%; margin-bottom: 10px;">
       <div id="task-list"></div>
       <button onclick="showHome()">Volver a Inicio</button>
     </section>
@@ -181,48 +179,30 @@
       tasks.forEach(task => {
         const taskDiv = document.createElement("div");
         const dueDate = new Date(task.fields['Fecha de vencimiento']);
-        const today = new Date();
-        const diffMonths = (dueDate.getFullYear() - today.getFullYear()) * 12 + (dueDate.getMonth() - today.getMonth());
-        const color = diffMonths <= 1 ? 'red' : diffMonths === 2 ? 'yellow' : 'green';
+        dueDate.setDate(dueDate.getDate() + 1);
+        const formattedDate = dueDate.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        taskDiv.textContent = `Descripción: ${task.fields['Descripción']} - Fecha de vencimiento: ${formattedDate}`;
         
-        taskDiv.innerHTML = `<strong>${task.fields['Descripción']}</strong><br>Fecha de vencimiento: <span style="color: ${color};">${dueDate.toLocaleDateString()}</span>`;
+        const daysToDueDate = (new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24);
+        taskDiv.style.backgroundColor = daysToDueDate <= 30 ? 'red' : daysToDueDate <= 60 ? 'yellow' : 'green';
+        
         taskListDiv.appendChild(taskDiv);
       });
     }
 
-    function filterTasks() {
-      const searchQuery = document.getElementById("task-search").value.toLowerCase();
-      const taskDivs = document.getElementById("task-list").children;
-
-      for (const taskDiv of taskDivs) {
-        const taskText = taskDiv.innerText.toLowerCase();
-        taskDiv.style.display = taskText.includes(searchQuery) ? "block" : "none";
-      }
-    }
-
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        document.getElementById("login-section").style.display = "none";
-        document.getElementById("app").style.display = "block";
-        showHome();
-      } else {
-        document.getElementById("app").style.display = "none";
-        showLoginForm();
-      }
-    });
-
-    document.getElementById("task-form").addEventListener("submit", async (e) => {
+    document.getElementById("task-form").addEventListener("submit", (e) => {
       e.preventDefault();
       const description = document.getElementById("description").value;
       const dueDate = document.getElementById("due-date").value;
-      await saveTaskToAirtable(description, dueDate);
+      saveTaskToAirtable(description, dueDate);
       document.getElementById("task-form").reset();
-      alert("Tarea registrada con éxito");
-      showTaskList();
     });
 
     function logout() {
-      auth.signOut();
+      auth.signOut().then(() => {
+        document.getElementById("app").style.display = "none";
+        document.getElementById("login-section").style.display = "block";
+      });
     }
   </script>
 </body>
