@@ -54,6 +54,32 @@ button:focus {
     box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
 }
 
+/* Botón "Volver a Inicio" */
+.return-button {
+    width: 100%;
+    padding: 14px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0px 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.return-button:hover {
+    background-color: #0056b3;
+    box-shadow: 0px 4px 10px rgba(0, 86, 179, 0.5);
+}
+
+.return-button:focus {
+    outline: none;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+}
+
 /* Inputs */
 input {
     width: 100%;
@@ -71,38 +97,43 @@ input:focus {
     border-color: #007bff;
 }
 
-/* Lista de tareas */
-#task-list div {
+/* Estilos para la lista de tareas */
+#task-list-section {
+    max-height: calc(100vh - 160px); /* Ajusta el espacio de visualización para permitir desplazamiento */
+    overflow-y: auto;
+    padding-bottom: 70px; /* Deja espacio suficiente para que el botón 'Volver a Inicio' no quede cubierto */
+}
+
+#task-list {
     display: flex;
     flex-direction: column;
-    padding: 16px;
-    background-color: #f7f7f7;
-    border-radius: 10px;
-    margin-bottom: 12px;
-    transition: all 0.2s ease;
-    font-size: 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    gap: 10px;
 }
 
-#task-list div:hover {
-    background-color: #e9ecef;
+.task {
+    padding: 15px;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 600;
 }
 
-/* Colores de prioridad */
-#task-list div.red {
-    border-left: 6px solid #ff4d4d;
+.task.red {
+    background-color: #ff4d4d;
 }
 
-#task-list div.yellow {
-    border-left: 6px solid #ffcc00;
-}
-
-#task-list div.green {
-    border-left: 6px solid #4CAF50;
-}
-
-#task-list div strong {
+.task.yellow {
+    background-color: #ffcc00;
     color: #333;
+}
+
+.task.green {
+    background-color: #28a745;
+}
+
+/* Color del botón de "Volver a Inicio" en la sección de seguimiento */
+#task-list-section button {
+    margin-top: 20px;
+    width: 100%;
 }
 
 /* Mejoras de accesibilidad para móviles */
@@ -125,7 +156,7 @@ input:focus {
         margin-bottom: 20px;
     }
 
-    button {
+    button, .return-button {
         font-size: 1rem;
         padding: 14px;
         margin-top: 10px;
@@ -143,19 +174,17 @@ input:focus {
 }
 
 /* Footer */
-
-    footer {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      text-align: center;
-      padding: 30px;
-      background-color: #333;
-      color: white;
- font-size: 1rem;
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    padding: 30px;
+    background-color: #333;
+    color: white;
+    font-size: 1rem;
     font-weight: 600;
-    }
-
+}
 
 /* Modo oscuro */
 @media (prefers-color-scheme: dark) {
@@ -167,12 +196,12 @@ input:focus {
         background-color: #1e1e1e;
         color: #e0e0e0;
     }
-    button {
+    button, .return-button {
         background-color: #333;
         color: #e0e0e0;
         box-shadow: 0px 4px 8px rgba(50, 50, 50, 0.5);
     }
-    button:hover {
+    button:hover, .return-button:hover {
         background-color: #444;
     }
     input {
@@ -185,6 +214,7 @@ input:focus {
         color: #e0e0e0;
     }
 }
+
 /* Ajustes específicos para el formulario de inicio de sesión */
 #login-form {
     display: flex;
@@ -233,6 +263,7 @@ input:focus {
         padding: 12px;
     }
 }
+
 #search-container {
     margin-bottom: 15px;
     width: 100%;
@@ -246,4 +277,3 @@ input:focus {
     font-size: 1rem;
     box-sizing: border-box;
 }
-
