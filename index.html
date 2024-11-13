@@ -136,9 +136,7 @@
           records: [{ fields: { 'Descripción': description, 'Fecha de vencimiento': dueDate, 'Fecha de creación': new Date().toISOString(), 'ID de usuario': userId } }]
         })
       });
-      if (response.ok) {
-        showTaskList();
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
         console.error("Error al guardar la tarea:", errorData);
         alert("Error al guardar la tarea.");
@@ -153,51 +151,61 @@
         }
       });
       const data = await response.json();
-      const sortedTasks = data.records.sort((a, b) => new Date(a.fields['Fecha de vencimiento']) - new Date(b.fields['Fecha de vencimiento']));
+
+      const today = new Date().setHours(0, 0, 0, 0);
+      const tasksToShow = data.records.filter(task => new Date(task.fields['Fecha de vencimiento']).setHours(0, 0, 0, 0) >= today);
+      const expiredTasks = data.records.filter(task => new Date(task.fields['Fecha de vencimiento']).setHours(0, 0, 0, 0) < today);
+
+      for (const expiredTask of expiredTasks) {
+        await deleteTaskFromAirtable(expiredTask.id);
+      }
+
+      const sortedTasks = tasksToShow.sort((a, b) => new Date(a.fields['Fecha de vencimiento']) - new Date(b.fields['Fecha de vencimiento']));
       updateTaskList(sortedTasks);
+    }
+
+    async function deleteTaskFromAirtable(taskId) {
+      await fetch(`https://api.airtable.com/v0/appnERds2vBGovYJP/Tareas/${taskId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer patKdRGdBpkVOvg7T.fd64109904b18f402d4456c6a7f40aba4ce4fffb4204fb07c88df5baeb75760c`
+        }
+      });
     }
 
     function updateTaskList(tasks) {
       const taskListDiv = document.getElementById("task-list");
-      taskListDiv.innerHTML = '';
+      taskListDiv.innerHTML = "";
       tasks.forEach(task => {
         const taskDiv = document.createElement("div");
         const dueDate = new Date(task.fields['Fecha de vencimiento']);
-        const today = new Date();
-        const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-        taskDiv.style.backgroundColor = daysLeft <= 30 ? "red" : daysLeft <= 60 ? "yellow" : "green";
-        taskDiv.innerHTML = `<strong>Descripción:</strong> ${task.fields['Descripción']} <br>
-                             <strong>Fecha de Vencimiento:</strong> ${dueDate.toISOString().split("T")[0]}`;
+        dueDate.setDate(dueDate.getDate() + 1);
+        const formattedDate = dueDate.toLocaleDateString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        taskDiv.textContent = `Descripción: ${task.fields['Descripción']} - Fecha de vencimiento: ${formattedDate}`;
+        
+        const daysToDueDate = (new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24);
+        taskDiv.style.backgroundColor = daysToDueDate <= 30 ? 'red' : daysToDueDate <= 60 ? 'yellow' : 'green';
+        
         taskListDiv.appendChild(taskDiv);
       });
     }
 
-    document.getElementById("task-form").addEventListener("submit", async (e) => {
+    document.getElementById("task-form").addEventListener("submit", (e) => {
       e.preventDefault();
       const description = document.getElementById("description").value;
       const dueDate = document.getElementById("due-date").value;
-      await saveTaskToAirtable(description, dueDate);
-    });
-
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        document.getElementById("login-section").style.display = "none";
-        document.getElementById("app").style.display = "block";
-        showHome();
-      } else {
-        document.getElementById("login-section").style.display = "block";
-        document.getElementById("app").style.display = "none";
-      }
+      saveTaskToAirtable(description, dueDate);
+      document.getElementById("task-form").reset();
     });
 
     function logout() {
       auth.signOut().then(() => {
-        document.getElementById("login-section").style.display = "block";
         document.getElementById("app").style.display = "none";
+        document.getElementById("login-section").style.display = "block";
       });
     }
-  </script>    
-  <style>
+  </script>
+<style>
     footer {
       position: fixed;
       bottom: 0;
@@ -210,4 +218,3 @@
   </style>
 </body>
 </html>
-
