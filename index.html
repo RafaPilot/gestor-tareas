@@ -46,12 +46,11 @@
         <input type="date" id="due-date" required>
         <button type="submit">Registrar Tarea</button>
       </form>
-      <button onclick="showHome()">Volver a Inicio</button>
+      <<button id="back-to-home-button" onclick="showHome()">Volver a Inicio</button>
     </section>
 
     <section id="task-list-section" style="display: none;">
       <h2>Seguimiento de Tareas</h2>
-      <!-- Buscador en la parte superior de Seguimiento -->
       <input type="text" id="task-search" placeholder="Buscar tareas..." oninput="filterTasks()" style="width: 100%; margin-bottom: 10px;">
       <div id="task-list"></div>
       <button onclick="showHome()">Volver a Inicio</button>
@@ -86,19 +85,21 @@
     function showHome() {
       document.getElementById("home-section").style.display = "block";
       document.getElementById("register-task-section").style.display = "none";
-      document.getElementById("task-list-section").style.display = "none";
+      document.getElementById("task-list-section").style.display = "none";  // Asegura que la sección de seguimiento esté oculta
     }
 
     function showTaskForm() {
       document.getElementById("home-section").style.display = "none";
       document.getElementById("register-task-section").style.display = "block";
-      document.getElementById("task-form").reset();
+      document.getElementById("task-form").reset();  // Limpiar los campos del formulario
+      document.getElementById("task-list-section").style.display = "none";  // Asegura que la sección de seguimiento esté oculta
     }
 
     function showTaskList() {
       document.getElementById("home-section").style.display = "none";
       document.getElementById("task-list-section").style.display = "block";
       loadUserTasks();
+      document.getElementById("register-task-section").style.display = "none"; // Asegura que la sección de registro esté oculta
     }
 
     document.getElementById("login-form").addEventListener("submit", (e) => {
@@ -135,7 +136,7 @@
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          records: [{ fields: { 'Descripción': description, 'Fecha de vencimiento': dueDate, 'Fecha de creación': new Date().toISOString(), 'ID de usuario': userId } }]
+          records: [{ fields: { 'Descripción': description, 'Fecha de vencimiento': dueDate, 'Fecha de creación': new Date().toISOString(), 'ID de usuario': userId } } ]
         })
       });
       if (!response.ok) {
@@ -167,62 +168,68 @@
     }
 
     async function deleteTaskFromAirtable(taskId) {
-      await fetch(`https://api.airtable.com/v0/appnERds2vBGovYJP/Tareas/${taskId}`, {
+      const response = await fetch(`https://api.airtable.com/v0/appnERds2vBGovYJP/Tareas/${taskId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer patKdRGdBpkVOvg7T.fd64109904b18f402d4456c6a7f40aba4ce4fffb4204fb07c88df5baeb75760c`
         }
       });
+      if (response.ok) {
+        console.log('Tarea eliminada con éxito');
+      }
     }
 
     function updateTaskList(tasks) {
       const taskListDiv = document.getElementById("task-list");
-      taskListDiv.innerHTML = "";
+      taskListDiv.innerHTML = ''; // Limpiar lista de tareas
       tasks.forEach(task => {
-        const taskDiv = document.createElement("div");
+        const taskItem = document.createElement("div");
         const dueDate = new Date(task.fields['Fecha de vencimiento']);
-        const today = new Date();
-        const diffMonths = (dueDate.getFullYear() - today.getFullYear()) * 12 + (dueDate.getMonth() - today.getMonth());
-        const color = diffMonths <= 1 ? 'red' : diffMonths === 2 ? 'yellow' : 'green';
-        
-        taskDiv.innerHTML = `<strong>${task.fields['Descripción']}</strong><br>Fecha de vencimiento: <span style="color: ${color};">${dueDate.toLocaleDateString()}</span>`;
-        taskListDiv.appendChild(taskDiv);
+        const daysLeft = Math.ceil((dueDate - new Date()) / (1000 * 60 * 60 * 24));
+
+        let taskClass = '';
+        if (daysLeft <= 30) taskClass = 'red'; // Rojo
+        else if (daysLeft <= 60) taskClass = 'yellow'; // Amarillo
+        else taskClass = 'green'; // Verde
+
+        taskItem.classList.add("task", taskClass);
+        taskItem.innerHTML = `
+          <p>${task.fields['Descripción']}</p>
+          <p>Vence el ${task.fields['Fecha de vencimiento']}</p>
+        `;
+        taskListDiv.appendChild(taskItem);
       });
     }
 
     function filterTasks() {
-      const searchQuery = document.getElementById("task-search").value.toLowerCase();
-      const taskDivs = document.getElementById("task-list").children;
-
-      for (const taskDiv of taskDivs) {
-        const taskText = taskDiv.innerText.toLowerCase();
-        taskDiv.style.display = taskText.includes(searchQuery) ? "block" : "none";
-      }
+      const searchTerm = document.getElementById("task-search").value.toLowerCase();
+      const tasks = Array.from(document.getElementById("task-list").getElementsByClassName("task"));
+      tasks.forEach(task => {
+        const taskText = task.textContent.toLowerCase();
+        if (taskText.includes(searchTerm)) {
+          task.style.display = "block";
+        } else {
+          task.style.display = "none";
+        }
+      });
     }
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        document.getElementById("login-section").style.display = "none";
-        document.getElementById("app").style.display = "block";
-        showHome();
-      } else {
-        document.getElementById("app").style.display = "none";
-        showLoginForm();
-      }
-    });
-
-    document.getElementById("task-form").addEventListener("submit", async (e) => {
+    document.getElementById("task-form").addEventListener("submit", (e) => {
       e.preventDefault();
       const description = document.getElementById("description").value;
       const dueDate = document.getElementById("due-date").value;
-      await saveTaskToAirtable(description, dueDate);
-      document.getElementById("task-form").reset();
-      alert("Tarea registrada con éxito");
-      showTaskList();
+
+      saveTaskToAirtable(description, dueDate).then(() => {
+        alert("Tarea registrada con éxito");
+        document.getElementById("task-form").reset();  // Limpiar los campos
+      });
     });
 
     function logout() {
-      auth.signOut();
+      auth.signOut().then(() => {
+        document.getElementById("app").style.display = "none";
+        document.getElementById("login-section").style.display = "block";
+      });
     }
   </script>
 </body>
